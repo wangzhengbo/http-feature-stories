@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Cache Control</title>
+  </head>
+  <body>
+    <pre>
+      1. 可缓存性
+        * public  浏览器/proxy服务器等均可缓存
+        * private  只有发起请求的浏览器才可以进行缓存
+        * no-cache 可以缓存，但在使用缓存时需向服务器确认是否可以使用缓存
+        * no-store 浏览器/proxy服务器均不可以进行缓存
+      
+      2. 到期
+        * max-age=<seconds> 浏览器缓存有效期
+        * s-maxage=<seconds> 代理服务器缓存有效期
+      
+      3. 重新认证
+        * must-revalidate 浏览器使用缓存时需向服务器确认是否可以使用缓存
+        * proxy-revalidate proxy服务器使用缓存时需向服务器确认是否可以使用缓存
+
+      4. 其他
+        * no-transform  proxy服务器不能改动数据
+
+      以上均是声明性，没有强制性，即可以不按照上面声明的设置操作，但是不建议。
+    </pre>
+  </body>
+  <script src="/script.js"></script>
+</html>
