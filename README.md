@@ -1,9 +1,131 @@
 # http-feature-stories
 
-Demo application showing how to use the Http features, such as cache-control, cookie, http2, cors...
+Demo application showing how to use the Http features, such as connection, cookie, http2, cors...
+
+### Connection
+
+[`Connection`](./connection/index.html)
+
+Chrome 允许同时最多创建 6 个 tcp 连接
+当 Connection 设置 keep-alive 时，同时发起的 http 请求数大于 6 时，多出来的 http 请求会复用之前创建的 tcp 连接
+可查看 Network 的 Connection ID 来验证是否复用
+
+当 Connection 设置 close 时，每次 http 请求会创建一个 tcp 连接，当 http 请求完成时，tcp 连接会关闭。
+下次 http 请求需重新创建 tcp 连接，不会复用之前的 tcp 连接，导致一定性能开销（例如 tcp 的三次握手等）
+
+注意：
+在 http/2 里，一个 tcp 连接可以同时发送多个 http 请求。在 http/1.1 以及之前的版本，一个 tcp 连接只能同时发送 一个 http 请求。
+
+### Cookie
+
+[`Cookie`](./cookie/index.html)
+
+Cookie 属性：
+
+- max-age 过期时间段
+- expires 过期时间点
+- Secure 只有在 https 时发送
+- HttpOnly 禁止 javascript 访问，无法通过 document.cookie 获取 cookie
+
+在同一个主域名下，所有的二级域名均可共享主域名的 cookie
+
+注意：
+Session 是在服务端保存的一个数据结构，用来跟踪用户的状态，这个数据可以保存在集群、数据库、文件中；
+Cookie 是客户端保存用户信息的一种机制，用来记录用户的一些信息，也是实现 Session 的一种方式。
 
 ### Cors
 
-Cross-origin resource sharing
-
 [`Cors`](./cors/index.html)
+
+跨域资源共享 Cross-origin resource sharing
+
+1.  请求方法是以下三种方法之一：
+
+- HEAD
+- GET
+- POST
+
+2.  HTTP 的头信息不超出以下几种字段：
+
+- Accept
+- Accept-Language
+- Content-Language
+- Last-Event-ID
+- Content-Type：只限于三个值 application/x-www-form-urlencoded、multipart/form-data、text/plain
+
+满足以上条件为简单请求，否则为非简单请求。
+非简单请求发送前，需要发送预检（Option）请求
+
+相关返回头部字段：
+
+- Access-Control-Allow-Origin 允许的请求来自的域
+- Access-Control-Allow-Methods 允许的请求方法
+- Access-Control-Allow-Headers 允许的头部字段
+- Access-Control-Max-Age 预检请求成功后多长时间内再次发送非简单请求不用进行预检
+
+### Expires
+
+[`Expires`](./expires/index.html)
+
+强制缓存中的 Expires
+
+设定某个时间/日期，在这个时间/日期之前，HTTP 缓存被认为是有效的。
+如果同时设置了 Cache-Control 响应首部字段的 max-age，则 Expires 会被忽略。
+
+HTTP/1.1 之前版本遗留的通用首部字段，仅作为于 HTTP/1.0 的向后兼容而使用。
+
+### Cache-Control
+
+[`Cache-Control`](./cache-control/index.html)
+
+强制缓存中的 Cache-Control
+
+HTTP/1.1 控制浏览器缓存的主流的通用首部字段。
+
+设定一个时间段，在这个时间段内 HTTP 缓存被认为是有效的。以下是设置的属性。
+
+1. 可缓存性
+
+- public 浏览器/proxy 服务器等均可缓存
+- private 只有发起请求的浏览器才可以进行缓存
+- no-cache 可以缓存，但在使用缓存时需向服务器确认是否可以使用缓存
+- no-store 浏览器/proxy 服务器均不可以进行缓存
+
+2. 到期
+
+- max-age=<seconds> 浏览器缓存有效期
+- s-maxage=<seconds> 代理服务器缓存有效期
+
+3. 重新认证
+
+- must-revalidate 浏览器使用缓存时需向服务器确认是否可以使用缓存
+- proxy-revalidate proxy 服务器使用缓存时需向服务器确认是否可以使用缓存
+
+4. 其他
+
+- no-transform proxy 服务器不能改动数据
+
+### Last-Modified
+
+[`Last-Modified`](./last-modified/index.html)
+
+协商缓存中的 Last-Modified
+
+If-Modified-Since 是一个请求首部字段，并且只能用在 GET 或者 HEAD 请求中。Last-Modified 是一个响应首部字段，包含服务器认定的资源作出修改的日期及时间。当带着 If-Modified-Since 头访问服务器请求资源时，服务器会检查 Last-Modified，如果 Last-Modified 的时间早于或等于 If-Modified-Since 则会返回一个不带主体的 304 响应，否则将重新返回资源。
+
+### Etag
+
+[`Etag`](./etag/index.html)
+
+协商缓存中的 Etag
+
+ETag 是一个响应首部字段，它是根据实体内容生成的一段 hash 字符串，标识资源的状态，由服务端产生。If-None-Match 是一个条件式的请求首部。如果请求资源时在请求首部加上这个字段，值为之前服务器端返回的资源上的 ETag，则当且仅当服务器上没有任何资源的 ETag 属性值与这个首部中列出的时候，服务器才会返回带有所请求资源实体的 200 响应，否则服务器会返回不带实体的 304 响应。ETag 优先级比 Last-Modified 高，同时存在时会以 ETag 为准。
+
+| 缓存机制      | 优点                                                                                                                     | 缺点                                                                                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Expires       | 1.HTTP 1.0 产物，可以在 HTTP 1.0 和 1.1 中使用，简单易用。 2. 以时刻标识失效时间。                                       | 1.时间是由服务器发送的(UTC)，如果服务器时间和客户端时间存在不一致，可能会出现问题。 2. 存在版本问题，到期之前的修改客户端是不可知的。                                                                                              |
+| Cache-Control | 1. HTTP 1.1 产物，以时间间隔标识失效时间，解决了 Expires 服务器和客户端相对时间的问题。 2. 比 Expires 多了很多选项设置。 | 1. HTTP 1.1 才有的内容，不适用于 HTTP 1.0 。 2. 存在版本问题，到期之前的修改客户端是不可知的。                                                                                                                                     |
+| Last-Modified | 1. 不存在版本问题，每次请求都会去服务器进行校验。服务器对比最后修改时间如果相同则返回 304，不同返回 200 以及资源内容。   | 1.只要资源修改，无论内容是否发生实质性的变化，都会将该资源返回客户端。例如周期性重写，这种情况下该资源包含的数据实际上一样的。2. 以时刻作为标识，无法识别一秒内进行多次修改的情况。3. 某些服务器不能精确的得到文件的最后修改时间。 |
+| Etag          | 1. 可以更加精确的判断资源是否被修改，可以识别一秒内多次修改的情况。2. 不存在版本问题，每次请求都回去服务器进行校验。     | 1. 计算 ETag 值需要性能损耗。2. 分布式服务器存储的情况下，计算 ETag 的算法如果不一样，会导致浏览器从一台服务器上获得页面内容后到另外一台服务器上进行验证时发现 ETag 不匹配的情况。                                                 |
+
+|

@@ -3,7 +3,6 @@ const fs = require('fs');
 
 http
   .createServer(function(request, response) {
-    console.log('request come:', request.url);
     if (request.url === '/') {
       const html = fs.readFileSync('index.html', 'utf8');
       response.writeHead(200, {
