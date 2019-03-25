@@ -164,6 +164,44 @@ If-Modified-Since 是一个请求首部字段，并且只能用在 GET 或者 HE
 
 ETag 是一个响应首部字段，它是根据实体内容生成的一段 hash 字符串，标识资源的状态，由服务端产生。If-None-Match 是一个条件式的请求首部。如果请求资源时在请求首部加上这个字段，值为之前服务器端返回的资源上的 ETag，则当且仅当服务器上没有任何资源的 ETag 属性值与这个首部中列出的时候，服务器才会返回带有所请求资源实体的 200 响应，否则服务器会返回不带实体的 304 响应。ETag 优先级比 Last-Modified 高，同时存在时会以 ETag 为准。
 
+### nginx-cache
+
+[`nginx-cache`](./nginx-cache/index.html)
+
+代理服务器缓存 nginx-cache
+
+**代理服务器设置：**
+
+```
+proxy_cache_path  /home/nginx/proxy_cache/cache levels=1:2 keys_zone=proxycache:60m max_size=120m inactive=2h use_temp_path=on;
+proxy_temp_path    /home/nginx/proxy_cache/temp;
+proxy_cache_key    $host$request_uri;
+```
+
+/home/nginx/proxy_cache/cache：定义 proxy_cache 生成文件的根路径
+
+- levels：默认所有缓存文件都放在上面指定的根路径中，从而可能影响缓存的性能。推荐指定为 2 级目录来存储缓存文件
+- key_zone：这个的值是字符串，可以随意写。用于在共享内存中定义一块存储区域来存放缓存的 key 和 metadata（类似于使用次数），这样 nginx 可以快速判断一个 request 是否命中缓存。1m 可以存储 8000 个 key
+- max_size：最大 cache 空间。如果不指定，会使用掉所有 disk space。当达到 disk 上限后，会删除最少使用的 cache
+- inactive：内存中缓存的过期检查周期。示例配置中如果 2h 内都没有被访问，则不论状态是否为 expired，都会清除缓存。需要注意的是，inactive 和 expired 配置项的含义是不同的，expired 只是判断过期时间，不会删除缓存；而 inactive 是直接删除过期缓存
+- use_temp_path：如果为 off，则 nginx 会将缓存文件直接写入指定的 cache 文件中，而不使用 temp_path 指定的临时存储路径
+
+proxy_temp_path
+
+- /home/nginx/proxy_cache/temp：定义 proxy_cache 生成临时文件的根路径。此项在 use_temp_path=off 时不需填写
+
+proxy_cache_key
+
+- $host$request_uri：定义 proxy_cache 生成文件的名称。值可以为 Nginx 支持的变量和字符串
+
+**response 头部字段设置：**
+
+Cache_Control: s-maxage=[seconds]
+其中参数含义：
+s-maxage 代理服务器缓存有效期
+private 只有浏览器才能缓存
+public 浏览器和代理服务器均可缓存
+
 | 缓存机制      | 优点                                                                                                                     | 缺点                                                                                                                                                                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Expires       | 1.HTTP 1.0 产物，可以在 HTTP 1.0 和 1.1 中使用，简单易用。 2. 以时刻标识失效时间。                                       | 1.时间是由服务器发送的(UTC)，如果服务器时间和客户端时间存在不一致，可能会出现问题。 2. 存在版本问题，到期之前的修改客户端是不可知的。                                                                                              |
