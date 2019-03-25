@@ -33,6 +33,49 @@ Cookie 属性：
 Session 是在服务端保存的一个数据结构，用来跟踪用户的状态，这个数据可以保存在集群、数据库、文件中；
 Cookie 是客户端保存用户信息的一种机制，用来记录用户的一些信息，也是实现 Session 的一种方式。
 
+### CSP
+
+[`CSP`](./csp/index.html)
+
+内容安全策略 Content-Security-Policy
+
+#### 限制的方面
+
+default-src 限制所有引用文件路径（包括饮用的 img script style 等）
+connect-src 发送请求的路径
+img-src
+script-src
+style-src
+font-src
+frame-src
+media-src
+manifest-src
+
+form-action 表单提交的路径
+
+#### 限制的选项
+
+http http 的路径
+https https 的路径
+self 同域的路径
+某个域 该域的路径
+
+注：
+Content-Security-Policy 和 Content-Security-Policy-Report-Only 区别：
+Content-Security-Policy-Report-Only 只会向后抬发送报告，并不会强制执行限制。
+
+更多内容请看
+[CSP](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP)
+...
+
+### Redirect
+
+[`Redirect`](./redirect/index.html)
+
+对应 http 状态码
+301 永久重定向 指定浏览器下次再次访问时，直接在浏览器端重定向，不需要向服务器请求
+302 临时重定向 浏览器下次再次访问时，仍需向服务器请求
+
 ### Cors
 
 [`Cors`](./cors/index.html)
@@ -127,5 +170,3 @@ ETag 是一个响应首部字段，它是根据实体内容生成的一段 hash 
 | Cache-Control | 1. HTTP 1.1 产物，以时间间隔标识失效时间，解决了 Expires 服务器和客户端相对时间的问题。 2. 比 Expires 多了很多选项设置。 | 1. HTTP 1.1 才有的内容，不适用于 HTTP 1.0 。 2. 存在版本问题，到期之前的修改客户端是不可知的。                                                                                                                                     |
 | Last-Modified | 1. 不存在版本问题，每次请求都会去服务器进行校验。服务器对比最后修改时间如果相同则返回 304，不同返回 200 以及资源内容。   | 1.只要资源修改，无论内容是否发生实质性的变化，都会将该资源返回客户端。例如周期性重写，这种情况下该资源包含的数据实际上一样的。2. 以时刻作为标识，无法识别一秒内进行多次修改的情况。3. 某些服务器不能精确的得到文件的最后修改时间。 |
 | Etag          | 1. 可以更加精确的判断资源是否被修改，可以识别一秒内多次修改的情况。2. 不存在版本问题，每次请求都回去服务器进行校验。     | 1. 计算 ETag 值需要性能损耗。2. 分布式服务器存储的情况下，计算 ETag 的算法如果不一样，会导致浏览器从一台服务器上获得页面内容后到另外一台服务器上进行验证时发现 ETag 不匹配的情况。                                                 |
-
-|
