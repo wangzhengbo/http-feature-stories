@@ -2,6 +2,22 @@
 
 Demo application showing how to use the Http features, such as connection, cookie, http2, cors...
 
+本项目主要是通过代码演示 Http 的相关的概念 connection, cookie, http2, cors 等。
+
+### 如何运行 demo
+
+环境要求：全局安装 node，版本需要 8 以上，例如运行 cors
+
+```javascript
+cd cors
+node server.js
+node server2.js
+```
+
+建议安装 nodemon 用来运行 js 文件，因为支持热更新
+
+## Http Features
+
 ### Connection
 
 [`Connection`](./connection/index.html)
@@ -13,7 +29,7 @@ Chrome 允许同时最多创建 6 个 tcp 连接
 当 Connection 设置 close 时，每次 http 请求会创建一个 tcp 连接，当 http 请求完成时，tcp 连接会关闭。
 下次 http 请求需重新创建 tcp 连接，不会复用之前的 tcp 连接，导致一定性能开销（例如 tcp 的三次握手等）
 
-注意：
+**注：**
 在 http/2 里，一个 tcp 连接可以同时发送多个 http 请求。在 http/1.1 以及之前的版本，一个 tcp 连接只能同时发送 一个 http 请求。
 
 ### Cookie
@@ -60,7 +76,7 @@ https https 的路径
 self 同域的路径
 某个域 该域的路径
 
-注：
+**注：**
 Content-Security-Policy 和 Content-Security-Policy-Report-Only 区别：
 Content-Security-Policy-Report-Only 只会向后抬发送报告，并不会强制执行限制。
 
